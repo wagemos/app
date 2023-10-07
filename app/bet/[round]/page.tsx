@@ -145,7 +145,9 @@ export default function Round({ params }: { params: { round: string } }) {
               {team.info.name}
             </p>
             <p className="font-medium text-right">
-              <span className="font-calsans text-lg">{team.description}</span>{' '}
+              <span className="font-calsans text-lg">
+                {team.info.description}
+              </span>{' '}
               members
             </p>
             <p className="font-medium text-right">
