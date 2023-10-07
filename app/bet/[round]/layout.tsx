@@ -1,4 +1,5 @@
 import { BASE_URL, rounds } from '@/utils'
+import { useWagemos } from '@/contexts/betting'
 
 interface Idea {
   id: number

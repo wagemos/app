@@ -1,9 +1,14 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { rounds } from '@/utils'
 import Image from 'next/image'
 import classNames from 'classnames'
+import { useWagemos } from '@/contexts/betting'
+import { useWagemosRoundQuery } from '@/types/Wagemos.react-query'
+import { useAccountsByIdsQuery } from '@/hooks/useAccountsByIdsQuery'
+import { AbstractAccountId } from '@abstract-money/abstract.js'
+import { useAccount } from '@/contexts/account'
 
 const teams = [
   {
@@ -26,15 +31,46 @@ const teams = [
   },
 ]
 
-export default function Round({ params }: { params: { round: string } }) {
+export default function Round({params}: { params: { round: string } }) {
   const round = useMemo(
     () => rounds.find((round) => round.id === params.round)!,
-    [params.round]
+    [params.round],
   )
+
+  const {chain} = useAccount()
+  const {wagemosClient} = useWagemos()
+
+  const {data: roundData} = useWagemosRoundQuery({
+    client: wagemosClient, args: {roundId: parseInt(round.id)}, options: {
+      select: (round) => ({
+        ...round,
+        teams: round.teams.map((team) => ({
+          sequence: team.seq,
+          trace: new AbstractAccountId(team.seq, team.trace).nullableTrace,
+          chain,
+        })),
+      }),
+    },
+  })
+
+  const {data: teamAccounts} = useAccountsByIdsQuery({
+    ids: roundData?.teams || [],
+    options: {
+      enabled: !!roundData?.teams,
+    },
+  })
+
+  useEffect(() => {
+    console.log('roundData', roundData)
+  }, [roundData])
+
+  useEffect(() => {
+    console.log('teamAccounts', teamAccounts)
+  }, [teamAccounts])
 
   const [customAmount, setCustomAmount] = useState<number>(0)
   const [selectedTeam, setSelectedTeam] = useState<number | undefined>(
-    undefined
+    undefined,
   )
 
   const handleSelectTeam = useCallback(
@@ -45,7 +81,7 @@ export default function Round({ params }: { params: { round: string } }) {
         setSelectedTeam(id)
       }
     },
-    [selectedTeam, setSelectedTeam]
+    [selectedTeam, setSelectedTeam],
   )
 
   return (
@@ -87,7 +123,7 @@ export default function Round({ params }: { params: { round: string } }) {
               selectedTeam === team.id
                 ? 'border-zinc-500 ring-zinc-500 ring'
                 : 'border-zinc-800',
-              'rounded-md border grid grid-cols-5 p-4 gap-2'
+              'rounded-md border grid grid-cols-5 p-4 gap-2',
             )}
           >
             <p className="font-semibold col-span-3 text-lg text-left">
@@ -107,15 +143,18 @@ export default function Round({ params }: { params: { round: string } }) {
         ))}
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        <div className="flex flex-col bg-zinc-700 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        <div
+          className="flex flex-col bg-zinc-700 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
           <p className="font-calsans text-3xl lg:text-4xl text-left">+10.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
         </div>
-        <div className="flex flex-col bg-zinc-800 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        <div
+          className="flex flex-col bg-zinc-800 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
           <p className="font-calsans text-3xl lg:text-4xl text-left">+25.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
         </div>
-        <div className="flex flex-col bg-zinc-900 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        <div
+          className="flex flex-col bg-zinc-900 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
           <p className="font-calsans text-3xl lg:text-4xl text-left">+50.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
         </div>
@@ -136,7 +175,8 @@ export default function Round({ params }: { params: { round: string } }) {
               step={1}
             />
           </div>
-          <button className="bg-zinc-800 hover:bg-zinc-900 text-white font-calsans inline-flex justify-center items-center rounded-md text-sm py-2 mt-2">
+          <button
+            className="bg-zinc-800 hover:bg-zinc-900 text-white font-calsans inline-flex justify-center items-center rounded-md text-sm py-2 mt-2">
             Submit Wager
           </button>
         </div>

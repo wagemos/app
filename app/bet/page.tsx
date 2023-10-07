@@ -1,11 +1,29 @@
-import Link from 'next/link'
+'use client'
+// import Link from 'next/link'
 import Image from 'next/image'
 
 import { tracks, bounties } from '@/utils'
 
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import { useWagemosListRoundsQuery, useWagemosRoundQuery } from '@/types/Wagemos.react-query'
+import { AbstractAccountId } from '@abstract-money/abstract.js'
+import { useWagemos } from '@/contexts/betting'
+import React, { useEffect } from 'react'
+import Link from 'next/link'
 
 export default function Rounds() {
+
+  const {wagemosClient} = useWagemos()
+
+  const {data: roundList} = useWagemosListRoundsQuery({
+    client: wagemosClient, args: {}
+  })
+
+  useEffect(() => {
+    console.log('roundList', roundList)
+  }, [roundList])
+
+
   return (
     <main className="grid grid-rows-5 lg:grid-cols-4 gap-4 mx-8 max-h-[87vh]">
       {tracks.map((track) => (
