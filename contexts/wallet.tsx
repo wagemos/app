@@ -32,6 +32,7 @@ export interface Account {
 export interface WalletContext {
   wallet: Account | undefined
   isFetchingWallet: boolean
+  refreshBalances: () => Promise<void>
   connect: (type?: string) => Promise<void>
   disconnect: () => void
 }
@@ -39,6 +40,7 @@ export interface WalletContext {
 const Wallet = createContext<WalletContext>({
   wallet: undefined,
   isFetchingWallet: false,
+  refreshBalances: async () => {},
   connect: async () => {},
   disconnect: () => {},
 })
@@ -165,6 +167,42 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setWallet(undefined)
   }, [walletRepos])
 
+  const refreshBalances = useCallback(async () => {
+    if (!wallet) throw new Error(`Wallet is not connected`)
+    try {
+      setIsFetchingWallet(true)
+
+      const balances = await wallet.stargate.getAllBalances(wallet.address)
+
+      const coins =
+        balances?.map((coin) => {
+          return {
+            denom: coin.denom,
+            amount: String(coin.amount),
+          }
+        }) ?? []
+
+      const balance = coins.find((coin) => {
+        return coin.denom === DENOM
+      }) || { denom: DENOM, amount: '0' }
+
+      const account: Account = {
+        address: wallet.address,
+        nsName: wallet.nsName,
+        balance,
+        coins,
+        stargate: wallet.stargate,
+        cosmwasm: wallet.cosmwasm,
+        wallet: wallet.wallet,
+      }
+
+      setWallet(account)
+    } catch (e) {
+      setIsFetchingWallet(false)
+      console.error(e)
+    }
+  }, [wallet])
+
   useEffect(() => {
     const currentWallet = localStorage.getItem(
       'cosmos-kit@2:core//current-wallet'
@@ -175,7 +213,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }, [connect])
 
   return (
-    <Wallet.Provider value={{ wallet, isFetchingWallet, connect, disconnect }}>
+    <Wallet.Provider
+      value={{ wallet, refreshBalances, isFetchingWallet, connect, disconnect }}
+    >
       {children}
     </Wallet.Provider>
   )
