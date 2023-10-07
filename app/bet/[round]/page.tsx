@@ -1,17 +1,16 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { rounds } from '@/utils'
+import { convertDenomToMicroDenom, rounds } from '@/utils'
 import Image from 'next/image'
 import classNames from 'classnames'
 import { useWagemos } from '@/contexts/betting'
-import {
-  useWagemosListOddsQuery,
-  useWagemosRoundQuery,
-} from '@/types/Wagemos.react-query'
+import { useWagemosListOddsQuery, useWagemosRoundQuery, wagemosQueryKeys } from '@/types/Wagemos.react-query'
 import { useAccountsByIdsQuery } from '@/hooks/useAccountsByIdsQuery'
 import { AbstractAccountId } from '@abstract-money/abstract.js'
 import { useAccount } from '@/contexts/account'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useWallet } from '@/contexts/wallet'
 
 const teams = [
   {
@@ -34,18 +33,20 @@ const teams = [
   },
 ]
 
-export default function Round({ params }: { params: { round: string } }) {
+export default function Round({params}: { params: { round: string } }) {
   const round = useMemo(
     () => rounds.find((round) => round.id === parseInt(params.round))!,
-    [params.round]
+    [params.round],
   )
 
-  const { chain } = useAccount()
-  const { wagemosClient } = useWagemos()
+  const {chain} = useAccount()
+  const {wallet} = useWallet()
 
-  const { data: roundData } = useWagemosRoundQuery({
+  const {wagemosClient} = useWagemos()
+
+  const {data: roundData} = useWagemosRoundQuery({
     client: wagemosClient,
-    args: { roundId: round.id },
+    args: {roundId: round.id},
     options: {
       select: (round) => ({
         ...round,
@@ -58,20 +59,20 @@ export default function Round({ params }: { params: { round: string } }) {
     },
   })
 
-  const { data: teamAccounts } = useAccountsByIdsQuery({
+  const {data: teamAccounts} = useAccountsByIdsQuery({
     ids: roundData?.teams || [],
     options: {
       enabled: !!roundData?.teams,
     },
   })
 
-  const { data: odds } = useWagemosListOddsQuery({
+  const {data: odds} = useWagemosListOddsQuery({
     args: {
       roundId: round.id,
     },
     client: wagemosClient,
     options: {
-      select: ({ odds }) => odds,
+      select: ({odds}) => odds,
     },
   })
 
@@ -85,7 +86,7 @@ export default function Round({ params }: { params: { round: string } }) {
 
   const [customAmount, setCustomAmount] = useState<number>(0)
   const [selectedTeam, setSelectedTeam] = useState<number | undefined>(
-    undefined
+    undefined,
   )
 
   const handleSelectTeam = useCallback(
@@ -96,8 +97,34 @@ export default function Round({ params }: { params: { round: string } }) {
         setSelectedTeam(id)
       }
     },
-    [selectedTeam, setSelectedTeam]
+    [selectedTeam, setSelectedTeam],
   )
+
+  const queryClient = useQueryClient()
+
+
+  const handleSubmitMutation = useMutation({
+    mutationFn: async (amount: number) => {
+      if (!wagemosClient) throw new Error('wagemosClient not found')
+      if (!selectedTeam) throw new Error('selectedTeam not found')
+      if (!wallet?.cosmwasm) throw new Error('cosmwasm not found')
+      let client = await wagemosClient.connectSigningClient(wallet.cosmwasm, wallet.address)
+
+      await client.placeBet({
+        roundId: round.id,
+        bet: {
+          account_id: new AbstractAccountId(selectedTeam),
+          asset: {
+            name: 'neutron>hackmos',
+            amount: convertDenomToMicroDenom(amount).toString(),
+          },
+        },
+      })
+    },
+    onSuccess: () => {
+      return queryClient.invalidateQueries({predicate: ({queryKey}) => queryKey?.[0] === wagemosQueryKeys.listOdds})
+    },
+  })
 
   return (
     <div>
@@ -138,24 +165,22 @@ export default function Round({ params }: { params: { round: string } }) {
               selectedTeam === team.accountId.sequence
                 ? 'border-zinc-500 ring-zinc-500 ring'
                 : 'border-zinc-800',
-              'rounded-md border grid grid-cols-5 p-4 gap-2'
+              'rounded-md border grid grid-cols-5 p-4 gap-2',
             )}
           >
             <p className="font-semibold col-span-3 text-lg text-left">
               {team.info.name}
             </p>
             <p className="font-medium text-right">
-              <span className="font-calsans text-lg">
-                {team.info.description}
-              </span>{' '}
+              <span className="font-calsans text-lg">{team.info.description}</span>{' '}
               members
             </p>
             <p className="font-medium text-right">
               <span className="font-calsans text-lg">
                 {parseFloat(
                   odds?.find(
-                    (prob) => prob.account_id.seq === team.accountId.sequence
-                  )?.odds || '1'
+                    (prob) => prob.account_id.seq === team.accountId.sequence,
+                  )?.odds || '1',
                 ).toFixed(2)}
                 :1
               </span>{' '}
@@ -165,19 +190,23 @@ export default function Round({ params }: { params: { round: string } }) {
         ))}
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        <div className="flex flex-col bg-zinc-700 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        <button onClick={() => handleSubmitMutation.mutate(10)}
+                className="flex flex-col bg-zinc-700 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
           <p className="font-calsans text-3xl lg:text-4xl text-left">+10.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
-        </div>
-        <div className="flex flex-col bg-zinc-800 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        </button>
+        <button onClick={() => handleSubmitMutation.mutate(25)}
+                className="flex flex-col bg-zinc-800 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
           <p className="font-calsans text-3xl lg:text-4xl text-left">+25.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
-        </div>
-        <div className="flex flex-col bg-zinc-900 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        </button>
+        <button onClick={() => handleSubmitMutation.mutate(50)}
+                className="flex flex-col bg-zinc-900 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
           <p className="font-calsans text-3xl lg:text-4xl text-left">+50.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
-        </div>
-        <div className="flex flex-col border border-zinc-800 rounded-md px-3 py-6">
+        </button>
+        <form onSubmit={() => handleSubmitMutation.mutate(customAmount)}
+              className="flex flex-col border border-zinc-800 rounded-md px-3 py-6">
           <div>
             <label htmlFor="amount" className="sr-only">
               Custom Wager
@@ -194,10 +223,11 @@ export default function Round({ params }: { params: { round: string } }) {
               step={1}
             />
           </div>
-          <button className="bg-zinc-800 hover:bg-zinc-900 text-white font-calsans inline-flex justify-center items-center rounded-md text-sm py-2 mt-2">
+          <button type="submit"
+                  className="bg-zinc-800 hover:bg-zinc-900 text-white font-calsans inline-flex justify-center items-center rounded-md text-sm py-2 mt-2">
             Submit Wager
           </button>
-        </div>
+        </form>
       </div>
     </div>
   )

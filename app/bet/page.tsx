@@ -24,10 +24,6 @@ export default function Rounds() {
     }
   })
 
-  useEffect(() => {
-    console.log('roundList', roundList)
-  }, [roundList])
-
   return (
     <main className="grid grid-rows-5 lg:grid-cols-4 gap-4 mx-8 max-h-[87vh]">
       {tracks.map((track) => (
