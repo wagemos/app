@@ -38,7 +38,7 @@ export default async function RoundLayout({
       </div>
       <div className="bg-zinc-800 rounded-lg p-6 md:h-[87vh]">
         <p className="font-calsans text-3xl lg:text-4xl text-left w-full">
-          Popular Opinion
+          Community Opinion
         </p>
         <div className="flex flex-col space-y-2 mt-4 w-full">
           {leaderboard.map((item: Idea, key: number) => (

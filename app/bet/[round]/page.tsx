@@ -211,14 +211,14 @@ export default function Round({ params }: { params: { round: string } }) {
                 <p className="font-semibold col-span-3 text-lg text-left">
                   {team.info.name}
                 </p>
-                <p className="font-medium text-right">
-                  <span className="font-calsans text-lg">
+                <p className="font-medium text-right text-base text-white/50">
+                  <span className="font-calsans text-lg text-white">
                     {team.info.description}
                   </span>{' '}
                   members
                 </p>
-                <p className="font-medium text-right">
-                  <span className="font-calsans text-lg">
+                <p className="font-medium text-right text-base text-white/50">
+                  <span className="font-calsans text-2xl text-white">
                     {parseFloat(
                       odds?.find(
                         (prob) =>
