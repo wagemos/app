@@ -28,8 +28,6 @@ const Account = createContext<AccountContext>({
 
 export const useAccount = (): AccountContext => useContext(Account)
 
-
-
 export const AccountClientProvider: FC<PropsWithChildren<{ accountId: AbstractAccountId, chain: string }>> = ({ accountId, chain, children }) => {
 
 
