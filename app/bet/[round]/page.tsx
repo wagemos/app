@@ -31,7 +31,7 @@ export default function Round({ params }: { params: { round: string } }) {
 
   const { tx } = useTx()
   const { chain } = useAccount()
-  const { wallet } = useWallet()
+  const { wallet, refreshBalances } = useWallet()
   const { wagemosClient } = useWagemos()
 
   const { data: roundData, isLoading: isLoadingRoundData } =
@@ -117,11 +117,15 @@ export default function Round({ params }: { params: { round: string } }) {
         [coin(microAmount, wallet.balance.denom)]
       )
 
-      tx([msg], {
-        toast: {
-          title: 'Wager Placed!',
+      await tx(
+        [msg],
+        {
+          toast: {
+            title: 'Wager Placed!',
+          },
         },
-      })
+        refreshBalances
+      )
     },
     onSuccess: () => {
       return queryClient.invalidateQueries({
@@ -150,19 +154,27 @@ export default function Round({ params }: { params: { round: string } }) {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
         <div className="border-zinc-800 border rounded-md flex flex-row items-baseline p-6">
-          <p className="font-calsans text-2xl lg:text-3xl text-left">
-            {convertMicroDenomToDenom(roundData?.total_bet.amount || 0).toFixed(
-              2
-            )}
-          </p>
+          {isLoadingRoundData ? (
+            <div className="h-8 rounded-md bg-white/25 animate-pulse w-12"></div>
+          ) : (
+            <p className="font-calsans text-2xl lg:text-3xl text-left">
+              {convertMicroDenomToDenom(
+                roundData?.total_bet.amount || 0
+              ).toFixed(2)}
+            </p>
+          )}
           <p className="font-medium text-white/50 ml-2">
             total $HACKMOS wagered
           </p>
         </div>
         <div className="border-zinc-800 border rounded-md flex flex-row items-baseline p-6">
-          <p className="font-calsans text-2xl lg:text-3xl text-left">
-            {roundData?.bet_count || 0}
-          </p>
+          {isLoadingRoundData ? (
+            <div className="h-8 rounded-md bg-white/25 animate-pulse w-12"></div>
+          ) : (
+            <p className="font-calsans text-2xl lg:text-3xl text-left">
+              {roundData?.bet_count || 0}
+            </p>
+          )}
           <p className="font-medium text-white/50 ml-2">total bettors</p>
         </div>
       </div>
@@ -175,7 +187,7 @@ export default function Round({ params }: { params: { round: string } }) {
                 className="rounded-md border border-zinc-800 grid grid-cols-5 p-4 gap-2"
               >
                 <div className="col-span-3 flex flex-row justify-start">
-                  <div className="h-7 rounded-md bg-white/50 animate-pulse w-1/2"></div>
+                  <div className="h-7 rounded-md bg-white/25 animate-pulse w-1/2"></div>
                 </div>
                 <div className="flex flex-row justify-end">
                   <div className="h-5 rounded-md bg-white/25 animate-pulse w-2/3"></div>
@@ -246,6 +258,7 @@ export default function Round({ params }: { params: { round: string } }) {
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
         </button>
         <form
+          action="javascript:void(0);"
           onSubmit={() => handleSubmitMutation.mutate(customAmount)}
           className="flex flex-col border border-zinc-800 rounded-md px-3 py-6"
         >
