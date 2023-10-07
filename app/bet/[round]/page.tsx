@@ -126,11 +126,18 @@ export default function Round({ params }: { params: { round: string } }) {
         },
         refreshBalances
       )
+
+      return contractAddress
     },
-    onSuccess: () => {
+    onSuccess: (d, v, c) => {
       return queryClient.invalidateQueries({
-        predicate: ({ queryKey }) =>
-          queryKey?.[0] === wagemosQueryKeys.listOdds,
+        predicate: ({ queryKey }) => {
+          return Object.entries(queryKey?.[0] ?? {}).some(([k, v]) => {
+            let maybe = k === 'contract' && v === 'wagemos'
+
+            return maybe
+          })
+        },
       })
     },
   })
