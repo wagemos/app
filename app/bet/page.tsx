@@ -17,9 +17,11 @@ import Link from 'next/link'
 export default function Rounds() {
   const { wagemosClient } = useWagemos()
 
-  const { data: roundList } = useWagemosListRoundsQuery({
-    client: wagemosClient,
-    args: {},
+  const {data: roundList} = useWagemosListRoundsQuery({
+    client: wagemosClient, args: {},
+    options: {
+      select: ({ rounds }) => rounds,
+    }
   })
 
   useEffect(() => {

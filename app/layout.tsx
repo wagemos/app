@@ -17,6 +17,7 @@ import { AbstractAccountId } from '@abstract-money/abstract.js'
 import { BETTING_ACCOUNT_ID, NETWORK } from '@/utils'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagemosProvider } from '@/contexts/betting'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -53,6 +54,7 @@ export default function RootLayout({
           </WalletProvider>
         </WalletSelectProvider>
       </ChainProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </html>
   )
