@@ -61,7 +61,6 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
           },
         },
       }}
-      logLevel="DEBUG"
     >
       <Chain.Provider value={{}}>{children}</Chain.Provider>
     </CosmosKitProvider>
