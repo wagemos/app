@@ -18,6 +18,7 @@ import { BETTING_ACCOUNT_ID, NETWORK } from '@/utils'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagemosProvider } from '@/contexts/betting'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ToasterContainer, TxProvider } from '@/contexts/tx'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -38,22 +39,28 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${calsans.variable} overflow-hidden min-h-screen`}
     >
+      <ToasterContainer position="bottom-center" />
       <Meta />
       <QueryClientProvider client={queryClient}>
-      <ChainProvider>
-        <WalletSelectProvider>
-          <WalletProvider>
-            <AccountClientProvider accountId={BETTING_ACCOUNT_ID} chain={NETWORK}>
-              <WagemosProvider>
-              <body>
-                <Nav />
-                {children}
-              </body>
-              </WagemosProvider>
-            </AccountClientProvider>
-          </WalletProvider>
-        </WalletSelectProvider>
-      </ChainProvider>
+        <ChainProvider>
+          <WalletSelectProvider>
+            <WalletProvider>
+              <AccountClientProvider
+                accountId={BETTING_ACCOUNT_ID}
+                chain={NETWORK}
+              >
+                <WagemosProvider>
+                  <TxProvider>
+                    <body>
+                      <Nav />
+                      {children}
+                    </body>
+                  </TxProvider>
+                </WagemosProvider>
+              </AccountClientProvider>
+            </WalletProvider>
+          </WalletSelectProvider>
+        </ChainProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </html>

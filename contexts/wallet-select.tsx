@@ -113,7 +113,6 @@ export const WalletSelectProvider = ({ children }: { children: ReactNode }) => {
 
   const selectWallet = (walletRepo: WalletRepo) => {
     // mount modal with a callback
-    console.log(walletRepo)
     return new Promise<WalletName | undefined>((resolve) => {
       mountModal(walletRepo, (walletName) => {
         setModal(undefined)

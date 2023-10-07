@@ -1,92 +1,76 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { convertDenomToMicroDenom, rounds } from '@/utils'
+import {
+  convertDenomToMicroDenom,
+  convertMicroDenomToDenom,
+  rounds,
+} from '@/utils'
 import Image from 'next/image'
 import classNames from 'classnames'
 import { useWagemos } from '@/contexts/betting'
-import { useWagemosListOddsQuery, useWagemosRoundQuery, wagemosQueryKeys } from '@/types/Wagemos.react-query'
+import {
+  useWagemosListOddsQuery,
+  useWagemosRoundQuery,
+  wagemosQueryKeys,
+} from '@/types/Wagemos.react-query'
 import { useAccountsByIdsQuery } from '@/hooks/useAccountsByIdsQuery'
 import { AbstractAccountId } from '@abstract-money/abstract.js'
 import { useAccount } from '@/contexts/account'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useWallet } from '@/contexts/wallet'
+import { WagemosMessageComposer } from '@/types/Wagemos.message-composer'
+import { useTx } from '@/contexts/tx'
+import { coin } from '@cosmjs/amino'
 
-const teams = [
-  {
-    id: 1,
-    name: 'Hackmos Betting Platform',
-    teamSize: 2,
-    odds: 1.65,
-  },
-  {
-    id: 2,
-    name: 'Trustless Interchain Oracle',
-    teamSize: 5,
-    odds: 2.35,
-  },
-  {
-    id: 3,
-    name: 'Validator Deleagation Bootstrapping Platform',
-    teamSize: 3,
-    odds: 3.15,
-  },
-]
-
-export default function Round({params}: { params: { round: string } }) {
+export default function Round({ params }: { params: { round: string } }) {
   const round = useMemo(
     () => rounds.find((round) => round.id === parseInt(params.round))!,
-    [params.round],
+    [params.round]
   )
 
-  const {chain} = useAccount()
-  const {wallet} = useWallet()
+  const { tx } = useTx()
+  const { chain } = useAccount()
+  const { wallet } = useWallet()
+  const { wagemosClient } = useWagemos()
 
-  const {wagemosClient} = useWagemos()
+  const { data: roundData, isLoading: isLoadingRoundData } =
+    useWagemosRoundQuery({
+      client: wagemosClient,
+      args: { roundId: round.id },
+      options: {
+        select: (round) => ({
+          ...round,
+          teams: round.teams.map((team) => ({
+            sequence: team.seq,
+            trace: new AbstractAccountId(team.seq, team.trace).nullableTrace,
+            chain,
+          })),
+        }),
+      },
+    })
 
-  const {data: roundData} = useWagemosRoundQuery({
-    client: wagemosClient,
-    args: {roundId: round.id},
-    options: {
-      select: (round) => ({
-        ...round,
-        teams: round.teams.map((team) => ({
-          sequence: team.seq,
-          trace: new AbstractAccountId(team.seq, team.trace).nullableTrace,
-          chain,
-        })),
-      }),
-    },
-  })
+  const { data: teamAccounts, isLoading: isLoadingTeamAccounts } =
+    useAccountsByIdsQuery({
+      ids: roundData?.teams || [],
+      options: {
+        enabled: !!roundData?.teams,
+      },
+    })
 
-  const {data: teamAccounts} = useAccountsByIdsQuery({
-    ids: roundData?.teams || [],
-    options: {
-      enabled: !!roundData?.teams,
-    },
-  })
-
-  const {data: odds} = useWagemosListOddsQuery({
+  const { data: odds, isLoading: isLoadingOdds } = useWagemosListOddsQuery({
     args: {
       roundId: round.id,
     },
     client: wagemosClient,
     options: {
-      select: ({odds}) => odds,
+      select: ({ odds }) => odds,
     },
   })
 
-  useEffect(() => {
-    console.log('roundData', roundData)
-  }, [roundData])
-
-  useEffect(() => {
-    console.log('teamAccounts', teamAccounts)
-  }, [teamAccounts])
-
   const [customAmount, setCustomAmount] = useState<number>(0)
   const [selectedTeam, setSelectedTeam] = useState<number | undefined>(
-    undefined,
+    undefined
   )
 
   const handleSelectTeam = useCallback(
@@ -97,32 +81,53 @@ export default function Round({params}: { params: { round: string } }) {
         setSelectedTeam(id)
       }
     },
-    [selectedTeam, setSelectedTeam],
+    [selectedTeam, setSelectedTeam]
   )
 
   const queryClient = useQueryClient()
 
-
   const handleSubmitMutation = useMutation({
     mutationFn: async (amount: number) => {
+      if (!selectedTeam) {
+        alert('Please click on a team to select it first.')
+        throw new Error('selectedTeam not found')
+      }
       if (!wagemosClient) throw new Error('wagemosClient not found')
-      if (!selectedTeam) throw new Error('selectedTeam not found')
       if (!wallet?.cosmwasm) throw new Error('cosmwasm not found')
-      let client = await wagemosClient.connectSigningClient(wallet.cosmwasm, wallet.address)
 
-      await client.placeBet({
-        roundId: round.id,
-        bet: {
-          account_id: new AbstractAccountId(selectedTeam),
-          asset: {
-            name: 'neutron>hackmos',
-            amount: convertDenomToMicroDenom(amount).toString(),
+      const contractAddress = await wagemosClient.address()
+      const messageComposer = new WagemosMessageComposer(
+        wallet.address,
+        contractAddress
+      )
+
+      const microAmount = convertDenomToMicroDenom(amount).toString()
+
+      const msg = messageComposer.placeBet(
+        {
+          roundId: round.id,
+          bet: {
+            account_id: new AbstractAccountId(selectedTeam),
+            asset: {
+              name: 'neutron>hackmos',
+              amount: microAmount,
+            },
           },
+        },
+        [coin(microAmount, wallet.balance.denom)]
+      )
+
+      tx([msg], {
+        toast: {
+          title: 'Wager Placed!',
         },
       })
     },
     onSuccess: () => {
-      return queryClient.invalidateQueries({predicate: ({queryKey}) => queryKey?.[0] === wagemosQueryKeys.listOdds})
+      return queryClient.invalidateQueries({
+        predicate: ({ queryKey }) =>
+          queryKey?.[0] === wagemosQueryKeys.listOdds,
+      })
     },
   })
 
@@ -145,68 +150,105 @@ export default function Round({params}: { params: { round: string } }) {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
         <div className="border-zinc-800 border rounded-md flex flex-row items-baseline p-6">
-          <p className="font-calsans text-2xl lg:text-3xl text-left">1024.00</p>
+          <p className="font-calsans text-2xl lg:text-3xl text-left">
+            {convertMicroDenomToDenom(roundData?.total_bet.amount || 0).toFixed(
+              2
+            )}
+          </p>
           <p className="font-medium text-white/50 ml-2">
             total $HACKMOS wagered
           </p>
         </div>
         <div className="border-zinc-800 border rounded-md flex flex-row items-baseline p-6">
-          <p className="font-calsans text-2xl lg:text-3xl text-left">24</p>
+          <p className="font-calsans text-2xl lg:text-3xl text-left">
+            {roundData?.bet_count || 0}
+          </p>
           <p className="font-medium text-white/50 ml-2">total bettors</p>
         </div>
       </div>
       <p className="font-calsans text-2xl lg:text-3xl mt-8">Teams competing</p>
       <div className="grid grid-cols-1 gap-2 mt-4 max-h-[37vh] overflow-y-scroll">
-        {teamAccounts?.map((team) => (
-          <button
-            key={team.id}
-            onClick={() => handleSelectTeam(team.accountId.sequence)}
-            className={classNames(
-              selectedTeam === team.accountId.sequence
-                ? 'border-zinc-500 ring-zinc-500 ring'
-                : 'border-zinc-800',
-              'rounded-md border grid grid-cols-5 p-4 gap-2',
-            )}
-          >
-            <p className="font-semibold col-span-3 text-lg text-left">
-              {team.info.name}
-            </p>
-            <p className="font-medium text-right">
-              <span className="font-calsans text-lg">{team.info.description}</span>{' '}
-              members
-            </p>
-            <p className="font-medium text-right">
-              <span className="font-calsans text-lg">
-                {parseFloat(
-                  odds?.find(
-                    (prob) => prob.account_id.seq === team.accountId.sequence,
-                  )?.odds || '1',
-                ).toFixed(2)}
-                :1
-              </span>{' '}
-              odds
-            </p>
-          </button>
-        ))}
+        {isLoadingTeamAccounts || isLoadingOdds
+          ? [100, 101, 102, 103].map((key) => (
+              <div
+                key={key}
+                className="rounded-md border border-zinc-800 grid grid-cols-5 p-4 gap-2"
+              >
+                <div className="col-span-3 flex flex-row justify-start">
+                  <div className="h-7 rounded-md bg-white/50 animate-pulse w-1/2"></div>
+                </div>
+                <div className="flex flex-row justify-end">
+                  <div className="h-5 rounded-md bg-white/25 animate-pulse w-2/3"></div>
+                </div>
+                <div className="flex flex-row justify-end">
+                  <div className="h-5 rounded-md bg-white/25 animate-pulse w-2/3"></div>
+                </div>
+              </div>
+            ))
+          : teamAccounts?.map((team) => (
+              <button
+                key={team.id}
+                onClick={() => handleSelectTeam(team.accountId.sequence)}
+                className={classNames(
+                  selectedTeam === team.accountId.sequence
+                    ? 'border-zinc-500 ring-zinc-500 ring'
+                    : 'border-zinc-800',
+                  'rounded-md border grid grid-cols-5 p-4 gap-2'
+                )}
+              >
+                <p className="font-semibold col-span-3 text-lg text-left">
+                  {team.info.name}
+                </p>
+                <p className="font-medium text-right">
+                  <span className="font-calsans text-lg">
+                    {team.info.description}
+                  </span>{' '}
+                  members
+                </p>
+                <p className="font-medium text-right">
+                  <span className="font-calsans text-lg">
+                    {parseFloat(
+                      odds?.find(
+                        (prob) =>
+                          prob.account_id.seq === team.accountId.sequence
+                      )?.odds || '1'
+                    ).toFixed(2)}
+                    :1
+                  </span>{' '}
+                  odds
+                </p>
+              </button>
+            ))}
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        <button onClick={() => handleSubmitMutation.mutate(10)}
-                className="flex flex-col bg-zinc-700 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        <button
+          onClick={() => handleSubmitMutation.mutate(10)}
+          disabled={!selectedTeam}
+          className="flex flex-col disabled:cursor-not-allowed bg-zinc-700 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer"
+        >
           <p className="font-calsans text-3xl lg:text-4xl text-left">+10.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
         </button>
-        <button onClick={() => handleSubmitMutation.mutate(25)}
-                className="flex flex-col bg-zinc-800 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        <button
+          onClick={() => handleSubmitMutation.mutate(25)}
+          disabled={!selectedTeam}
+          className="flex flex-col disabled:cursor-not-allowed bg-zinc-800 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer"
+        >
           <p className="font-calsans text-3xl lg:text-4xl text-left">+25.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
         </button>
-        <button onClick={() => handleSubmitMutation.mutate(50)}
-                className="flex flex-col bg-zinc-900 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer">
+        <button
+          onClick={() => handleSubmitMutation.mutate(50)}
+          disabled={!selectedTeam}
+          className="flex flex-col disabled:cursor-not-allowed bg-zinc-900 rounded-md px-3 py-8 hover:bg-opacity-75 transition duration-200 ease-in-out cursor-pointer"
+        >
           <p className="font-calsans text-3xl lg:text-4xl text-left">+50.00</p>
           <p className="font-medium text-white/50 mt-1.5">$HACKMOS wager</p>
         </button>
-        <form onSubmit={() => handleSubmitMutation.mutate(customAmount)}
-              className="flex flex-col border border-zinc-800 rounded-md px-3 py-6">
+        <form
+          onSubmit={() => handleSubmitMutation.mutate(customAmount)}
+          className="flex flex-col border border-zinc-800 rounded-md px-3 py-6"
+        >
           <div>
             <label htmlFor="amount" className="sr-only">
               Custom Wager
@@ -223,8 +265,10 @@ export default function Round({params}: { params: { round: string } }) {
               step={1}
             />
           </div>
-          <button type="submit"
-                  className="bg-zinc-800 hover:bg-zinc-900 text-white font-calsans inline-flex justify-center items-center rounded-md text-sm py-2 mt-2">
+          <button
+            type="submit"
+            className="bg-zinc-800 hover:bg-zinc-900 text-white font-calsans inline-flex justify-center items-center rounded-md text-sm py-2 mt-2"
+          >
             Submit Wager
           </button>
         </form>

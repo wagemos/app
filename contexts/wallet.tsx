@@ -119,7 +119,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
           balances?.map((coin) => {
             return {
               denom: coin.denom,
-              amount: String(convertMicroDenomToDenom(coin.amount)),
+              amount: String(coin.amount),
             }
           }) ?? []
 
