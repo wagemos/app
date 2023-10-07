@@ -38,21 +38,21 @@ export const convertDenomToMicroDenom = (
 
 export const tracks = [
   {
-    id: 'neutron',
+    id: 0,
     name: 'Neutron',
     description:
       'Build cross-chain CosmWasm smart contracts using IBC on Neutron.',
     image: '/neutron.svg',
   },
   {
-    id: 'okp4',
+    id: 1,
     name: 'OKP-4',
     description:
       'Develop digital asset sharing & coordination protocols on OKP-4.',
     image: '/okp.svg',
   },
   {
-    id: 'abci',
+    id: 2,
     name: 'ABCI++',
     description: "Improve IBC using Interchain Foundation's ABCI++.",
     image: '/icf.svg',
@@ -61,12 +61,12 @@ export const tracks = [
 
 export const bounties = [
   {
-    id: 'abstract',
+    id: 3,
     name: 'Abstract',
     image: '/abstract.svg',
   },
   {
-    id: 'akash',
+    id: 4,
     name: 'Akash Network',
     image: '/akash.svg',
   },
