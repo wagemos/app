@@ -208,10 +208,10 @@ export default function Round({ params }: { params: { round: string } }) {
                   'rounded-md border grid grid-cols-5 p-4 gap-2'
                 )}
               >
-                <p className="font-semibold col-span-3 text-lg text-left">
+                <p className="font-semibold col-span-3 text-lg text-left mt-1">
                   {team.info.name}
                 </p>
-                <p className="font-medium text-right text-base text-white/50">
+                <p className="font-medium text-right text-base text-white/50 mt-1">
                   <span className="font-calsans text-lg text-white">
                     {team.info.description}
                   </span>{' '}
