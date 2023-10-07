@@ -1,0 +1,20 @@
+schema: "https://abstract-subgraph-0-19.fly.dev"
+
+documents: ['./**/*.{tsx,ts}', '!__generated__/gql/**/*']
+generates:
+  ./__generated__/gql/:
+    preset: client
+    plugins:
+      - add:
+          content: "import { RJSFSchema } from '@rjsf/utils'"
+    presetConfig:
+      gqlTagName: gql
+      immutableTypes: true
+    config:
+      immutableTypes: true
+      useTypeImports: true
+      scalars:
+        # Temporarily map to any, see DAT-16
+        JSON: any
+        Semver: string
+        Bech32Address: string

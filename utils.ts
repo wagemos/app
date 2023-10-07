@@ -1,10 +1,13 @@
 import BigNumber from 'bignumber.js'
+import { AbstractAccountId } from '@abstract-money/abstract.js'
 
 export const microDenomMultiplier = 1_000_000
 
 export const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL || 'https://wagemos.com/'
+
 export const NETWORK = process.env.NEXT_PUBLIC_NETWORK || 'neutron'
+export const BETTING_ACCOUNT_ID = AbstractAccountId.local(2)
 export const DENOM =
   process.env.NEXT_PUBLIC_DENOM ||
   'factory/neutron1js3pkant5zgm954n3cq2wz0e4z03tvq927hnc3/uhackmos'
