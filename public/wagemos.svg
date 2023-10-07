@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Logo Dark</title>
+    <g id="Logo-Dark" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Circle" stroke="#FFFFFF" stroke-width="62.5" cx="514" cy="512" r="288.75"></circle>
+        <line x1="792.749027" y1="156.250973" x2="152.250973" y2="796.749027" id="Line" stroke="#FFFFFF" stroke-width="62.5" stroke-linecap="square"></line>
+        <line x1="869.749027" y1="231.250973" x2="229.250973" y2="871.749027" id="Line-Copy" stroke="#FFFFFF" stroke-width="62.5" stroke-linecap="square"></line>
+    </g>
+</svg>

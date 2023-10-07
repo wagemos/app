@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>okp</title>
+    <g id="okp" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0, 135)" fill="#FFFFFF" fill-rule="nonzero">
+            <polygon id="Path" points="374.801518 754 0 376.007555 378.809735 4 467 92.7633541 416.892541 141.63291 378.809735 102.736804 99.2123894 377.005563 374.801518 655.263512 410.878635 620.355333 459.984829 670.22416"></polygon>
+            <polygon id="Path" fill-opacity="0.4" points="650.265399 521 601.015921 471.001194 694.493624 378.999465 598 281.000033 647.252647 232 794 380.000138"></polygon>
+            <path d="M645.490792,750 L271,372.503395 L556.13457,92.8760935 L650.509524,0 L1025,378.496258 L645.490792,750 Z M370.397167,373.502733 L646.493906,652.13133 L925.606313,377.496921 L649.506411,98.8680077 L370.397167,373.502733 Z" id="Shape"></path>
+        </g>
+    </g>
+</svg>

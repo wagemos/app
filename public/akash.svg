@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Akash</title>
+    <defs>
+        <linearGradient x1="31.7245461%" y1="41.5431386%" x2="99.8828667%" y2="66.8901799%" id="linearGradient-1">
+            <stop stop-color="#FFFFFF" offset="0%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.995806" offset="6.21083%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.983153" offset="12.3386%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.961934" offset="18.4176%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.932041" offset="24.4819%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.893366" offset="30.5657%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.845802" offset="36.7033%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.789242" offset="42.9288%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.723578" offset="49.2764%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.648703" offset="55.7802%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.56451" offset="62.4746%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.47089" offset="69.3936%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.367736" offset="76.5714%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.254942" offset="84.0423%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0.132399" offset="91.8405%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Akash" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0, 66)" fill-rule="nonzero">
+            <polygon id="Path" fill="url(#linearGradient-1)" points="685.054137 595 854 892 512.729837 892 342 595"></polygon>
+            <polygon id="Path" fill="#FFFFFF" points="854.393269 892 1025 594.715584 683.502401 0 342 0"></polygon>
+            <polygon id="Path" fill="#FFFFFF" points="170.666141 297 512 297 170.808141 892 0 594.569833"></polygon>
+        </g>
+    </g>
+</svg>
