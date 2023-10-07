@@ -14,6 +14,7 @@ const accountsByIdsQuery = gql(/* GraphQL */ `
       }
       info {
         name
+        description
         governance {
           governanceType
           owner
@@ -41,7 +42,10 @@ export interface AccountIdWithChain {
 }
 
 export interface UseAccountsByIdsQuery
-  extends ReactQueryOptions<AccountsByIdsQuery, AccountsByIdsQuery['accountsByIds']> {
+  extends ReactQueryOptions<
+    AccountsByIdsQuery,
+    AccountsByIdsQuery['accountsByIds']
+  > {
   ids: ReadonlyArray<{
     chain: string
     sequence: number
@@ -52,7 +56,10 @@ export interface UseAccountsByIdsQuery
 /**
  * Query the accounts at the passed ids.
  */
-export const useAccountsByIdsQuery = ({ ids, options }: UseAccountsByIdsQuery) => {
+export const useAccountsByIdsQuery = ({
+  ids,
+  options,
+}: UseAccountsByIdsQuery) => {
   return useSubgraphQuery(
     {
       ...options,

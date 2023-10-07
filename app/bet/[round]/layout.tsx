@@ -1,5 +1,4 @@
 import { BASE_URL, rounds } from '@/utils'
-import { useWagemos } from '@/contexts/betting'
 
 interface Idea {
   id: number
@@ -11,7 +10,7 @@ interface Idea {
 async function getLeaderboard(track: string | undefined) {
   if (!track) throw new Error('Track not specified')
 
-  const round = rounds.find((round) => round.id === track)
+  const round = rounds.find((round) => round.id === parseInt(track))
   if (!round) throw new Error('Could not find round')
 
   const res = await fetch(BASE_URL + 'api/leaderboard?track=' + round.name)

@@ -13,8 +13,7 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * Therefore it is highly recommended to use the babel-plugin for production.
  */
 const documents = {
-    "\n  query AccountsByIds($ids: [AccountIdWithChain!]!) {\n    accountsByIds(ids: $ids) {\n      id\n      chain\n      accountId {\n        sequence\n      }\n      info {\n        name\n        governance {\n          governanceType\n          owner\n        }\n      }\n      proxy\n      namespace\n      manager\n      subAccounts {\n        accountId {\n          sequence\n          trace\n        }\n        modules {\n          id\n        }\n      }\n    }\n  }\n": types.AccountsByIdsDocument,
-    "\n  query Deployments {\n    version\n    chains\n    deployments {\n      chain\n      registry\n      accountFactory\n      ansHost\n    }\n  }\n": types.DeploymentsDocument,
+    "\n  query AccountsByIds($ids: [AccountIdWithChain!]!) {\n    accountsByIds(ids: $ids) {\n      id\n      chain\n      accountId {\n        sequence\n      }\n      info {\n        name\n        description\n        governance {\n          governanceType\n          owner\n        }\n      }\n      proxy\n      namespace\n      manager\n      subAccounts {\n        accountId {\n          sequence\n          trace\n        }\n        modules {\n          id\n        }\n      }\n    }\n  }\n": types.AccountsByIdsDocument,
 };
 
 /**
@@ -34,11 +33,7 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query AccountsByIds($ids: [AccountIdWithChain!]!) {\n    accountsByIds(ids: $ids) {\n      id\n      chain\n      accountId {\n        sequence\n      }\n      info {\n        name\n        governance {\n          governanceType\n          owner\n        }\n      }\n      proxy\n      namespace\n      manager\n      subAccounts {\n        accountId {\n          sequence\n          trace\n        }\n        modules {\n          id\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query AccountsByIds($ids: [AccountIdWithChain!]!) {\n    accountsByIds(ids: $ids) {\n      id\n      chain\n      accountId {\n        sequence\n      }\n      info {\n        name\n        governance {\n          governanceType\n          owner\n        }\n      }\n      proxy\n      namespace\n      manager\n      subAccounts {\n        accountId {\n          sequence\n          trace\n        }\n        modules {\n          id\n        }\n      }\n    }\n  }\n"];
-/**
- * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function gql(source: "\n  query Deployments {\n    version\n    chains\n    deployments {\n      chain\n      registry\n      accountFactory\n      ansHost\n    }\n  }\n"): (typeof documents)["\n  query Deployments {\n    version\n    chains\n    deployments {\n      chain\n      registry\n      accountFactory\n      ansHost\n    }\n  }\n"];
+export function gql(source: "\n  query AccountsByIds($ids: [AccountIdWithChain!]!) {\n    accountsByIds(ids: $ids) {\n      id\n      chain\n      accountId {\n        sequence\n      }\n      info {\n        name\n        description\n        governance {\n          governanceType\n          owner\n        }\n      }\n      proxy\n      namespace\n      manager\n      subAccounts {\n        accountId {\n          sequence\n          trace\n        }\n        modules {\n          id\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query AccountsByIds($ids: [AccountIdWithChain!]!) {\n    accountsByIds(ids: $ids) {\n      id\n      chain\n      accountId {\n        sequence\n      }\n      info {\n        name\n        description\n        governance {\n          governanceType\n          owner\n        }\n      }\n      proxy\n      namespace\n      manager\n      subAccounts {\n        accountId {\n          sequence\n          trace\n        }\n        modules {\n          id\n        }\n      }\n    }\n  }\n"];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};
