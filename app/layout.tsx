@@ -3,7 +3,6 @@
 import { ChainProvider } from '@/contexts/chain'
 import { WalletSelectProvider } from '@/contexts/wallet-select'
 import { WalletProvider } from '@/contexts/wallet'
-import { AccountClientProvider } from '@/contexts/account'
 
 import Meta from '@/components/Meta'
 import Nav from '@/components/Nav'
@@ -13,13 +12,13 @@ import { Inter } from 'next/font/google'
 
 import './globals.css'
 import React from 'react'
-import { AbstractAccountId } from '@abstract-money/abstract.js'
 import { BETTING_ACCOUNT_ID, NETWORK } from '@/utils'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagemosProvider } from '@/contexts/betting'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ToasterContainer, TxProvider } from '@/contexts/tx'
-
+import { AbstractProvider, AccountProvider, QueryClientProvider as AQueryClientProvider }
+  from '@abstract-money/abstract.js-react'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 const calsans = Local({
@@ -42,13 +41,14 @@ export default function RootLayout({
       <ToasterContainer position="bottom-center" />
       <Meta />
       <QueryClientProvider client={queryClient}>
+        <AQueryClientProvider client={queryClient}>
+        <AbstractProvider chainNames={[NETWORK]} chainOptions={{ [NETWORK]: {
+          useBatchClient: true
+          }}}>
         <ChainProvider>
           <WalletSelectProvider>
             <WalletProvider>
-              <AccountClientProvider
-                accountId={BETTING_ACCOUNT_ID}
-                chain={NETWORK}
-              >
+              <AccountProvider accountId={BETTING_ACCOUNT_ID}>
                 <WagemosProvider>
                   <TxProvider>
                     <body>
@@ -57,10 +57,12 @@ export default function RootLayout({
                     </body>
                   </TxProvider>
                 </WagemosProvider>
-              </AccountClientProvider>
+              </AccountProvider>
             </WalletProvider>
           </WalletSelectProvider>
         </ChainProvider>
+        </AbstractProvider>
+        </AQueryClientProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </html>
