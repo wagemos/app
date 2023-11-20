@@ -1,8 +1,8 @@
 import { gql } from '@/__generated__/gql'
-import { useSubgraphQuery } from './useSubgraphQuery'
 import { subgraphQueryKeys } from './subgraphQueryKeys'
 import { QueryOptions, type ReactQueryOptions } from 'react-query-helpers'
 import { type AccountsByIdsQuery } from '@/__generated__/gql/graphql'
+import { useApiQuery } from '@abstract-money/abstract.js-react/lib/api/useApiQuery'
 
 const accountsByIdsQuery = gql(/* GraphQL */ `
   query AccountsByIds($ids: [AccountIdWithChain!]!) {
@@ -35,6 +35,7 @@ const accountsByIdsQuery = gql(/* GraphQL */ `
     }
   }
 `)
+
 export interface AccountIdWithChain {
   chain: string
   sequence: number
@@ -60,11 +61,11 @@ export const useAccountsByIdsQuery = ({
   ids,
   options,
 }: UseAccountsByIdsQuery) => {
-  return useSubgraphQuery(
+  return useApiQuery(
     {
       ...options,
       queryKey: subgraphQueryKeys.accountByIds(ids),
-      select: ({ accountsByIds }) => accountsByIds,
+      select: ({ accountsByIds }: AccountsByIdsQuery) => accountsByIds,
     },
     accountsByIdsQuery,
     {

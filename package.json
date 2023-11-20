@@ -11,7 +11,7 @@
     "codegen:watch": "graphql-codegen --watch"
   },
   "dependencies": {
-    "@abstract-money/abstract.js-react": "^0.19.1",
+    "@abstract-money/abstract.js-react": "^0.19.16",
     "@cosmjs/amino": "^0.31.1",
     "@cosmjs/cosmwasm-stargate": "^0.31.1",
     "@cosmjs/encoding": "^0.31.1",

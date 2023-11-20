@@ -30,7 +30,13 @@ import {
   WagemosQueryMsgBuilder,
   WagemosExecuteMsgBuilder,
 } from './Wagemos.msg-builder'
-export interface IWagemosAppQueryClient {
+
+interface AbstractAppQueryClient {
+  moduleId: string
+  accountQueryClient: AbstractAccountQueryClient
+  _moduleAddress: string | undefined
+}
+export interface IWagemosAppQueryClient extends AbstractAppQueryClient {
   moduleId: string
   accountQueryClient: AbstractAccountQueryClient
   _moduleAddress: string | undefined

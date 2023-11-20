@@ -7,7 +7,7 @@ export const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL || 'https://wagemos.com/'
 
 export const NETWORK = process.env.NEXT_PUBLIC_NETWORK || 'neutron'
-export const BETTING_ACCOUNT_ID = AbstractAccountId.local(2)
+export const BETTING_ACCOUNT_ID = AbstractAccountId.local(NETWORK, 2)
 export const GAS_DENOM = process.env.NEXT_PUBLIC_GAS_DENOM || 'untrn'
 export const DENOM =
   process.env.NEXT_PUBLIC_DENOM ||

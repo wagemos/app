@@ -14,14 +14,15 @@ import {
   useWagemosRoundQuery,
   wagemosQueryKeys,
 } from '@/types/Wagemos.react-query'
-import { useAccountsByIdsQuery } from '@/hooks/useAccountsByIdsQuery'
+import { UseAccountsByIdsQuery, useAccountsByIdsQuery } from '@/hooks/useAccountsByIdsQuery'
 import { AbstractAccountId } from '@abstract-money/abstract.js'
-import { useAccount } from '@/contexts/account'
+import { useAccount } from '@abstract-money/abstract.js-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useWallet } from '@/contexts/wallet'
 import { WagemosMessageComposer } from '@/types/Wagemos.message-composer'
 import { useTx } from '@/contexts/tx'
 import { coin } from '@cosmjs/amino'
+import { AccountsByIdsQuery } from '@/__generated__/gql/graphql'
 
 export default function Round({ params }: { params: { round: string } }) {
   const round = useMemo(
@@ -30,7 +31,7 @@ export default function Round({ params }: { params: { round: string } }) {
   )
 
   const { tx } = useTx()
-  const { chain } = useAccount()
+  const { accountId: { chainName: chain } } = useAccount()
   const { wallet, refreshBalances } = useWallet()
   const { wagemosClient } = useWagemos()
 
@@ -41,18 +42,14 @@ export default function Round({ params }: { params: { round: string } }) {
       options: {
         select: (round) => ({
           ...round,
-          teams: round.teams.map((team) => ({
-            sequence: team.seq,
-            trace: new AbstractAccountId(team.seq, team.trace).nullableTrace,
-            chain,
-          })),
+          teams: round.teams.map(({seq, trace}) => (new AbstractAccountId(chain, seq, trace))),
         }),
       },
     })
 
   const { data: teamAccounts, isLoading: isLoadingTeamAccounts } =
     useAccountsByIdsQuery({
-      ids: roundData?.teams || [],
+      ids: (roundData?.teams || []).map(team => team.toApi()),
       options: {
         enabled: !!roundData?.teams,
       },
@@ -107,7 +104,7 @@ export default function Round({ params }: { params: { round: string } }) {
         {
           roundId: round.id,
           bet: {
-            account_id: new AbstractAccountId(selectedTeam),
+            account_id: new AbstractAccountId(chain, selectedTeam).into(),
             asset: {
               name: 'neutron>hackmos',
               amount: microAmount,
@@ -204,7 +201,7 @@ export default function Round({ params }: { params: { round: string } }) {
                 </div>
               </div>
             ))
-          : teamAccounts?.map((team) => (
+          : (teamAccounts as AccountsByIdsQuery['accountsByIds'] | undefined)?.map((team) => (
               <button
                 key={team.id}
                 onClick={() => handleSelectTeam(team.accountId.sequence)}

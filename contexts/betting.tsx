@@ -7,7 +7,7 @@ import {
 } from 'react'
 import { QueryStatus, useQuery } from '@tanstack/react-query'
 import { WagemosAppQueryClient } from '@/types/Wagemos.client'
-import { useAccount } from '@/contexts/account'
+import { useAccount } from '@abstract-money/abstract.js-react'
 
 interface WagemosContext {
   wagemosClient: WagemosAppQueryClient | undefined
@@ -24,19 +24,19 @@ export const useWagemos = (): WagemosContext => useContext(Account)
 const BETTING_APP_MODULE_ID = 'abstract:betting'
 
 export const WagemosProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { accountClient, accountId } = useAccount()
+  const { accountQueryClient, accountId } = useAccount()
 
   const { data: wagemosClient, status } = useQuery({
     queryKey: ['wagemos-client', accountId],
     queryFn: async () => {
-      if (!accountClient) throw new Error('accountClient not found')
+      if (!accountQueryClient) throw new Error('accountQueryClient not found')
       return new WagemosAppQueryClient({
-        abstractQueryClient: accountClient.abstract,
-        ...accountClient,
+        abstractQueryClient: accountQueryClient.abstract,
+        ...accountQueryClient,
         moduleId: BETTING_APP_MODULE_ID,
       })
     },
-    enabled: !!accountClient,
+    enabled: !!accountQueryClient,
   })
 
   let value = useMemo(
